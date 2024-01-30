@@ -1125,6 +1125,7 @@ export class Document<T, P extends Indexable = Indexable> {
         OpSource.Remote,
       );
 
+      this.changeID = this.changeID.syncLamport(change.getID().getLamport());
       // DocEvent should be emitted synchronously with applying changes.
       // This is because 3rd party model should be synced with the Document
       // after RemoteChange event is emitted. If the event is emitted
@@ -1143,7 +1144,6 @@ export class Document<T, P extends Indexable = Indexable> {
         this.publish(presenceEvent);
       }
 
-      this.changeID = this.changeID.syncLamport(change.getID().getLamport());
     }
 
     if (logger.isEnabled(LogLevel.Debug)) {
