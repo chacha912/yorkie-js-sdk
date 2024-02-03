@@ -15,7 +15,16 @@
  */
 
 import type { PrimitiveValue } from '@yorkie-js-sdk/src/document/crdt/primitive';
+import type { DocEvent } from '@yorkie-js-sdk/src/document/document';
 import { CounterValue } from '@yorkie-js-sdk/src/document/crdt/counter';
+
+export type OpInfo = {
+  op: string;
+  event?: DocEvent;
+  snapshot?: Uint8Array | string;
+};
+
+export type ChangeInfo = Array<OpInfo>;
 
 /**
  * `Json` represents a JSON value.

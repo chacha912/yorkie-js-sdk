@@ -81,6 +81,11 @@ export type SDKToPanelMessage =
       msg: 'doc::available';
       docKey: string;
     }
+  | {
+      msg: 'doc::sync';
+      docKey: string;
+      history: Array<Devtools.ChangeInfo>;
+    }
   /**
    * Sent initially, to synchronize the entire current state of the document.
    */

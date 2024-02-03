@@ -1015,6 +1015,66 @@ export class Document<T, P extends Indexable = Indexable> {
     return this.root.toJSON();
   }
 
+  public toSnapshot(): Uint8Array {
+    const presences = new Map();
+    // this.getPresences();
+    for (const { clientID, presence } of this.getPresences()) {
+      presences.set(clientID, presence);
+    }
+
+    console.log('presence 왜??🚀', this.getPresences(), presences);
+    return converter.toSnapshot({
+      root: this.root.getObject().deepcopy(),
+      presences: deepcopy(presences),
+    });
+  }
+
+  public toSnapshotString(): string {
+    const snapshot = this.toSnapshot();
+    // return String.fromCharCode.apply(null, Array.from(snapshot));
+    return converter.bytesToHex(snapshot);
+  }
+
+  static toSnapshotFrom({
+    root,
+    presences,
+  }: {
+    root: CRDTObject;
+    presences?: Map<ActorID, Indexable>;
+  }): string {
+    const snapshot = converter.toSnapshot({
+      root,
+      presences: presences ? presences : new Map(),
+    });
+    return converter.bytesToHex(snapshot);
+  }
+
+  static createFromSnapshot<T, P extends Indexable>(
+    docKey: string,
+    snapshot: Uint8Array,
+  ): Document<T, P> {
+    const doc = new Document<T, P>(docKey);
+    const { root, presences } = converter.bytesToSnapshot<P>(snapshot);
+    doc.root = new CRDTRoot(root);
+    doc.presences = presences;
+
+    const onlineClients: Set<ActorID> = new Set();
+    for (const [clientID] of presences) {
+      onlineClients.add(clientID);
+    }
+    doc.setOnlineClients(onlineClients);
+    return doc;
+  }
+
+  public fromSnapshot(snapshot: Uint8Array): Document<T, P> {
+    const { root, presences } = converter.bytesToSnapshot<P>(snapshot);
+
+    const newDocument = new Document<T, P>(this.key, this.opts);
+    newDocument.root = new CRDTRoot(root);
+    newDocument.presences = presences;
+    return newDocument;
+  }
+
   /**
    * `toSortedJSON` returns the sorted JSON encoding of this document.
    */
