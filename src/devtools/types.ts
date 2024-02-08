@@ -16,6 +16,7 @@
 
 import type { PrimitiveValue } from '@yorkie-js-sdk/src/document/crdt/primitive';
 import type { DocEvent } from '@yorkie-js-sdk/src/document/document';
+import type { CRDTTreePosStruct } from '@yorkie-js-sdk/src/document/crdt/tree';
 import { CounterValue } from '@yorkie-js-sdk/src/document/crdt/counter';
 
 export type OpInfo = {
@@ -100,5 +101,9 @@ export type TreeNodeInfo = {
   insPrev?: string;
   insNext?: string;
   children: Array<TreeNodeInfo>;
+  attributes?: Record<string, string>;
   depth: number;
+  index: number;
+  path: Array<number>;
+  pos: CRDTTreePosStruct;
 };
