@@ -197,12 +197,12 @@ export class CRDTTreePos {
     const parentID = this.getParentID();
     const leftSiblingID = this.getLeftSiblingID();
     console.log(
-      '🍏🍏 find nodes - to tree nodes',
+      '💌💌 to tree nodes - to tree nodes',
       leftSiblingID,
       leftSiblingID.toTestString(),
     );
     const parentNode = tree.findFloorNode(parentID);
-    let leftNode = tree.findFloorNode(leftSiblingID);
+    let leftNode = tree.findFloorNode(leftSiblingID, true);
     if (!parentNode || !leftNode) {
       throw new Error(`cannot find node at ${this}`);
     }
@@ -212,15 +212,18 @@ export class CRDTTreePos {
      * it means that the position is the left-most of the parent node.
      * We need to skip finding the left of the position.
      */
+    console.log('🚨🚨🚨', leftNode.insPrevID);
     if (
       !leftSiblingID.equals(parentID) &&
       leftSiblingID.getOffset() > 0 &&
       leftSiblingID.getOffset() === leftNode.id.getOffset() &&
       leftNode.insPrevID
     ) {
-      leftNode = tree.findFloorNode(leftNode.insPrevID)!;
+      console.log('💌💌 to tree nodes - left node ????');
+      leftNode = tree.findFloorNode(leftNode.insPrevID, true)!;
     }
 
+    console.log('💌💌 to tree nodes end', leftNode.id.toTestString());
     return [parentNode, leftNode];
   }
 
@@ -674,14 +677,17 @@ export class CRDTTree extends CRDTGCElement {
   /**
    * `findFloorNode` finds node of given id.
    */
-  public findFloorNode(id: CRDTTreeNodeID): CRDTTreeNode | undefined {
-    console.log('👾 find floor node', id.toTestString());
-    const entry = this.nodeMapByID.floorEntry(id);
+  public findFloorNode(
+    id: CRDTTreeNodeID,
+    log?: boolean,
+  ): CRDTTreeNode | undefined {
+    if (log) console.log('👾 find floor node', id.toTestString());
+    const entry = this.nodeMapByID.floorEntry(id, log);
     if (!entry || !entry.key.getCreatedAt().equals(id.getCreatedAt())) {
       return;
     }
 
-    console.log('👾👾 find floor node!!', entry.value);
+    if (log) console.log('👾👾 find floor node!!', entry.value);
 
     return entry.value;
   }
@@ -709,7 +715,7 @@ export class CRDTTree extends CRDTGCElement {
     editedAt?: TimeTicket,
   ): [CRDTTreeNode, CRDTTreeNode] {
     // 01. Find the parent and left sibling node of the given position.
-    console.log('🍏 find nodes', pos, JSON.stringify(pos));
+    console.log('🍏🍏🍏🍏🍏 find nodes', pos, JSON.stringify(pos));
     const [parent, leftSibling] = pos.toTreeNodes(this);
     let leftNode = leftSibling;
 
@@ -719,7 +725,7 @@ export class CRDTTree extends CRDTGCElement {
     const realParent =
       leftNode.parent && !isLeftMost ? leftNode.parent : parent;
     console.log(
-      '💌💌 find nodes - 2',
+      '🍏🍏 find nodes - 2',
       realParent.id.toTestString(),
       leftNode.id.toTestString(),
     );
@@ -727,7 +733,7 @@ export class CRDTTree extends CRDTGCElement {
     // 03. Split text node if the left node is a text node.
     if (leftNode.isText) {
       console.log(
-        '💌💌 find nodes -3 split text node !!!',
+        '🍏🍏 find nodes -3',
         pos.getLeftSiblingID().getOffset(),
         leftNode.id.getOffset(),
       );
@@ -747,12 +753,12 @@ export class CRDTTree extends CRDTGCElement {
       for (let i = index; i < allChildren.length; i++) {
         const next = allChildren[i];
         console.log(
-          '💌 find nodes - 4',
+          '🍏🍏 find nodes - 4',
           next.id.toTestString(),
           editedAt.toTestString(),
         );
         if (!next.id.getCreatedAt().after(editedAt)) {
-          console.log('💌 break');
+          console.log('🍏🍏 break');
           break;
         }
 
@@ -760,6 +766,11 @@ export class CRDTTree extends CRDTGCElement {
       }
     }
 
+    console.log(
+      '🍏🍏 final',
+      realParent.id.toTestString(),
+      leftNode.id.toTestString(),
+    );
     return [realParent, leftNode];
   }
 
@@ -874,15 +885,15 @@ export class CRDTTree extends CRDTGCElement {
     const children = root?._children[1]?._children[0]?._children[0]?._children;
     if (children) {
       console.log(
-        '🌳 edit - Tell me tree',
-        children.map((v) =>
-          JSON.stringify([v._value, v.id.toTestString(), v.isRemoved]),
-        ),
+        '🌳🌳🌳 edit - Tell me tree 🌳🌳🌳 ',
+        // children.map((v) =>
+        //   JSON.stringify([v._value, v.id.toTestString(), v.isRemoved]),
+        // ),
       );
     }
 
     console.log(
-      '🚀edit- find from node',
+      '🚀🚀🚀🚀🚀 edit- find from node',
       JSON.stringify(range[0]),
       editedAt.toTestString(),
     );
@@ -896,7 +907,7 @@ export class CRDTTree extends CRDTGCElement {
     const fromIdx = this.toIndex(fromParent, fromLeft);
     const fromPath = this.toPath(fromParent, fromLeft);
     console.log(
-      '🚀🚀edit- find from left node!',
+      '🚀🚀🚀🚀🚀 edit end - find from left node!',
       fromParent.id.toTestString(),
       fromLeft.id.toTestString(),
       fromIdx,

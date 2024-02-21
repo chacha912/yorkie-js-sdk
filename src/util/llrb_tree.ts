@@ -142,7 +142,7 @@ export class LLRBTree<K, V> {
    * `floorEntry` returns the entry for the greatest key less than or equal to the
    *  given key. If there is no such key, returns `undefined`.
    */
-  public floorEntry(key: K): Entry<K, V> | undefined {
+  public floorEntry(key: K, log?: boolean): Entry<K, V> | undefined {
     function getNewLLRBTree(node: any, depth = 0, parent = null) {
       const currentNode: any = {
         depth,
@@ -159,19 +159,21 @@ export class LLRBTree<K, V> {
       return currentNode;
     }
     const llrbhead = getNewLLRBTree(this.root);
-    console.log('👾👾👾👾 floor Entry - llrb tree', this.root, llrbhead);
-    console.log('string', JSON.stringify(llrbhead));
+    if (log)
+      console.log('👾👾👾👾 floor Entry - llrb tree', this.root, llrbhead);
+    if (log) console.log('string', JSON.stringify(llrbhead));
 
     let node = this.root;
     while (node) {
-      console.log('👾while?', node.key, (node.key as any).toTestString());
+      if (log)
+        console.log('👾while?', node.key, (node.key as any).toTestString());
       const compare = this.comparator(key, node.key);
       if (compare > 0) {
         if (node.right) {
           node.right.parent = node;
           node = node.right;
         } else {
-          console.log('👾return 1');
+          if (log) console.log('👾return 1');
           return node;
         }
       } else if (compare < 0) {
@@ -185,11 +187,11 @@ export class LLRBTree<K, V> {
             childNode = parent;
             parent = parent.parent;
           }
-          console.log('👾return 2');
+          if (log) console.log('👾return 2');
           return parent!;
         }
       } else {
-        console.log('👾return 3');
+        if (log) console.log('👾return 3');
         return node;
       }
     }
