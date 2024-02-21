@@ -143,14 +143,35 @@ export class LLRBTree<K, V> {
    *  given key. If there is no such key, returns `undefined`.
    */
   public floorEntry(key: K): Entry<K, V> | undefined {
+    function getNewLLRBTree(node: any, depth = 0, parent = null) {
+      const currentNode: any = {
+        depth,
+        removedAt: node.value.removedAt?.toTestString(),
+        key: node.key.toTestString(),
+        value: node.value._value,
+      };
+      currentNode.left = node.left
+        ? getNewLLRBTree(node.left, depth + 1, currentNode)
+        : null;
+      currentNode.right = node.right
+        ? getNewLLRBTree(node.right, depth + 1, currentNode)
+        : null;
+      return currentNode;
+    }
+    const llrbhead = getNewLLRBTree(this.root);
+    console.log('👾👾👾👾 floor Entry - llrb tree', this.root, llrbhead);
+    console.log('string', JSON.stringify(llrbhead));
+
     let node = this.root;
     while (node) {
+      console.log('👾while?', node.key, (node.key as any).toTestString());
       const compare = this.comparator(key, node.key);
       if (compare > 0) {
         if (node.right) {
           node.right.parent = node;
           node = node.right;
         } else {
+          console.log('👾return 1');
           return node;
         }
       } else if (compare < 0) {
@@ -164,9 +185,11 @@ export class LLRBTree<K, V> {
             childNode = parent;
             parent = parent.parent;
           }
+          console.log('👾return 2');
           return parent!;
         }
       } else {
+        console.log('👾return 3');
         return node;
       }
     }

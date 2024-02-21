@@ -196,6 +196,11 @@ export class CRDTTreePos {
   public toTreeNodes(tree: CRDTTree): [CRDTTreeNode, CRDTTreeNode] {
     const parentID = this.getParentID();
     const leftSiblingID = this.getLeftSiblingID();
+    console.log(
+      '🍏🍏 find nodes - to tree nodes',
+      leftSiblingID,
+      leftSiblingID.toTestString(),
+    );
     const parentNode = tree.findFloorNode(parentID);
     let leftNode = tree.findFloorNode(leftSiblingID);
     if (!parentNode || !leftNode) {
@@ -670,10 +675,13 @@ export class CRDTTree extends CRDTGCElement {
    * `findFloorNode` finds node of given id.
    */
   public findFloorNode(id: CRDTTreeNodeID): CRDTTreeNode | undefined {
+    console.log('👾 find floor node', id.toTestString());
     const entry = this.nodeMapByID.floorEntry(id);
     if (!entry || !entry.key.getCreatedAt().equals(id.getCreatedAt())) {
       return;
     }
+
+    console.log('👾👾 find floor node!!', entry.value);
 
     return entry.value;
   }
@@ -701,6 +709,7 @@ export class CRDTTree extends CRDTGCElement {
     editedAt?: TimeTicket,
   ): [CRDTTreeNode, CRDTTreeNode] {
     // 01. Find the parent and left sibling node of the given position.
+    console.log('🍏 find nodes', pos, JSON.stringify(pos));
     const [parent, leftSibling] = pos.toTreeNodes(this);
     let leftNode = leftSibling;
 
@@ -709,9 +718,19 @@ export class CRDTTree extends CRDTGCElement {
     const isLeftMost = parent === leftNode;
     const realParent =
       leftNode.parent && !isLeftMost ? leftNode.parent : parent;
+    console.log(
+      '💌💌 find nodes - 2',
+      realParent.id.toTestString(),
+      leftNode.id.toTestString(),
+    );
 
     // 03. Split text node if the left node is a text node.
     if (leftNode.isText) {
+      console.log(
+        '💌💌 find nodes -3 split text node !!!',
+        pos.getLeftSiblingID().getOffset(),
+        leftNode.id.getOffset(),
+      );
       leftNode.split(
         this,
         pos.getLeftSiblingID().getOffset() - leftNode.id.getOffset(),
@@ -727,7 +746,13 @@ export class CRDTTree extends CRDTGCElement {
 
       for (let i = index; i < allChildren.length; i++) {
         const next = allChildren[i];
+        console.log(
+          '💌 find nodes - 4',
+          next.id.toTestString(),
+          editedAt.toTestString(),
+        );
         if (!next.id.getCreatedAt().after(editedAt)) {
+          console.log('💌 break');
           break;
         }
 
@@ -846,10 +871,16 @@ export class CRDTTree extends CRDTGCElement {
   ): [Array<TreeChange>, Map<string, TimeTicket>] {
     // 01. find nodes from the given range and split nodes.
     const root = this.getIndexTree().getRoot();
-    console.log(
-      '🌳 edit - Tell me tree',
-      root?._children[1]?._children[0]?._children[0]?._children,
-    );
+    const children = root?._children[1]?._children[0]?._children[0]?._children;
+    if (children) {
+      console.log(
+        '🌳 edit - Tell me tree',
+        children.map((v) =>
+          JSON.stringify([v._value, v.id.toTestString(), v.isRemoved]),
+        ),
+      );
+    }
+
     console.log(
       '🚀edit- find from node',
       JSON.stringify(range[0]),
