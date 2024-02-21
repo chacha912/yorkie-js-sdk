@@ -845,14 +845,32 @@ export class CRDTTree extends CRDTGCElement {
     latestCreatedAtMapByActor?: Map<string, TimeTicket>,
   ): [Array<TreeChange>, Map<string, TimeTicket>] {
     // 01. find nodes from the given range and split nodes.
+    const root = this.getIndexTree().getRoot();
+    console.log(
+      '🌳 edit - Tell me tree',
+      root?._children[1]?._children[0]?._children[0]?._children,
+    );
+    console.log(
+      '🚀edit- find from node',
+      JSON.stringify(range[0]),
+      editedAt.toTestString(),
+    );
     const [fromParent, fromLeft] = this.findNodesAndSplitText(
       range[0],
       editedAt,
     );
+
     const [toParent, toLeft] = this.findNodesAndSplitText(range[1], editedAt);
 
     const fromIdx = this.toIndex(fromParent, fromLeft);
     const fromPath = this.toPath(fromParent, fromLeft);
+    console.log(
+      '🚀🚀edit- find from left node!',
+      fromParent.id.toTestString(),
+      fromLeft.id.toTestString(),
+      fromIdx,
+      JSON.stringify(fromPath),
+    );
 
     const nodesToBeRemoved: Array<CRDTTreeNode> = [];
     const tokensToBeRemoved: Array<TreeToken<CRDTTreeNode>> = [];

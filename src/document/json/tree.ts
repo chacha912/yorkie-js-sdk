@@ -435,6 +435,11 @@ export class Tree {
     content?: TreeNode,
     splitLevel = 0,
   ): boolean {
+    console.log(
+      '✅editByPath',
+      JSON.stringify([fromPath, toPath]),
+      JSON.stringify(content),
+    );
     if (!this.context || !this.tree) {
       throw new Error('it is not initialized yet');
     }
@@ -447,7 +452,11 @@ export class Tree {
 
     const fromPos = this.tree.pathToPos(fromPath);
     const toPos = this.tree.pathToPos(toPath);
-
+    console.log(
+      '🎃fromPos',
+      fromPos.getParentID().toTestString(),
+      fromPos.getLeftSiblingID().toTestString(),
+    );
     return this.editInternal(
       fromPos,
       toPos,
