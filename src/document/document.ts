@@ -263,7 +263,7 @@ export interface PresenceChangedEvent<P extends Indexable>
  */
 export interface DevtoolsEvent extends BaseDocEvent {
   type: DocEventType.Devtools;
-  value: Array<Devtools.ChangeInfo>;
+  value: Array<Devtools.ChangeInfo> | Devtools.SyncModeEvent;
 }
 
 /**
@@ -867,15 +867,24 @@ export class Document<T, P extends Indexable = Indexable> {
   /**
    * `publishDevtoolsEvent` stores changes for devtools and publishes devtools event.
    */
-  public publishDevtoolsEvent(changes: Array<Devtools.ChangeInfo>) {
+  public publishDevtoolsEvent(
+    event: Array<Devtools.ChangeInfo> | Devtools.SyncModeEvent,
+  ) {
     if (process.env.NODE_ENV === 'production') {
       return;
     }
 
-    this.changesForTest.push(...changes);
+    if ((event as any).type === 'sync-mode') {
+      this.publish({
+        type: DocEventType.Devtools,
+        value: event,
+      });
+      return;
+    }
+    this.changesForTest.push(...(event as Array<Devtools.ChangeInfo>));
     this.publish({
       type: DocEventType.Devtools,
-      value: changes,
+      value: event,
     });
   }
 

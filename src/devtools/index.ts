@@ -54,10 +54,18 @@ function startSync<T, P extends Indexable>(doc: Document<T, P>): void {
   });
 
   const unsub = doc.subscribeForTest((event) => {
+    if ((event.value as any).type) {
+      sendToPanel({
+        msg: 'doc::sync::mode',
+        docKey: doc.getKey(),
+        value: (event.value as any).value,
+      });
+      return;
+    }
     sendToPanel({
       msg: 'doc::sync::partial',
       docKey: doc.getKey(),
-      changes: event.value,
+      changes: event.value as any,
     });
   });
 

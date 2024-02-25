@@ -18,6 +18,7 @@ import type { PrimitiveValue } from '@yorkie-js-sdk/src/document/crdt/primitive'
 import type { DocEvent } from '@yorkie-js-sdk/src/document/document';
 import type { CRDTTreePosStruct } from '@yorkie-js-sdk/src/document/crdt/tree';
 import { CounterValue } from '@yorkie-js-sdk/src/document/crdt/counter';
+import { SyncMode } from '@yorkie-js-sdk/src/client/client';
 
 /**
  * `Json` represents a JSON value.
@@ -122,3 +123,4 @@ export type OpInfo = {
  * `ChangeInfo` represents the change information in devtools.
  */
 export type ChangeInfo = Array<OpInfo>;
+export type SyncModeEvent = { type: 'sync-mode'; value: SyncMode };

@@ -34,6 +34,11 @@ export class Attachment<T, P extends Indexable> {
     this.isRealtimeSync = isRealtimeSync;
     this.syncMode = SyncMode.PushPull;
     this.remoteChangeEventReceived = false;
+
+    this.doc.publishDevtoolsEvent({
+      type: 'sync-mode',
+      value: this.syncMode,
+    });
   }
 
   /**
@@ -59,6 +64,11 @@ export class Attachment<T, P extends Indexable> {
    */
   public changeSyncMode(syncMode: SyncMode) {
     this.syncMode = syncMode;
+
+    this.doc.publishDevtoolsEvent({
+      type: 'sync-mode',
+      value: this.syncMode,
+    });
   }
 
   /**

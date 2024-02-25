@@ -15,6 +15,7 @@
  */
 
 import type * as Devtools from '@yorkie-js-sdk/src/devtools/types';
+import { SyncMode } from '@yorkie-js-sdk/src/client/client';
 
 /**
  * `EventSourceDevPanel` is the name of the source representing messages
@@ -85,6 +86,11 @@ export type SDKToPanelMessage =
       msg: 'doc::sync::partial';
       docKey: string;
       changes: Array<Devtools.ChangeInfo>;
+    }
+  | {
+      msg: 'doc::sync::mode';
+      docKey: string;
+      value: SyncMode;
     };
 
 export type FullPanelToSDKMessage = PanelToSDKMessage & {
