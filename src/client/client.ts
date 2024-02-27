@@ -771,7 +771,9 @@ export class Client implements Observable<ClientEvent> {
       }
 
       Promise.all(syncJobs)
-        .then(() => setTimeout(doLoop, this.syncLoopDuration))
+        .then(() => {
+          setTimeout(doLoop, this.syncLoopDuration);
+        })
         .catch((err) => {
           logger.error(`[SL] c:"${this.getKey()}" sync failed:`, err);
           this.eventStreamObserver.next({
@@ -937,7 +939,7 @@ export class Client implements Observable<ClientEvent> {
     syncMode: SyncMode,
   ): Promise<Document<T, P>> {
     const { doc, docID } = attachment;
-
+    console.log('✅ sync start', syncMode);
     const reqPack = doc.createChangePack();
     return this.rpcClient
       .pushPullChanges(
@@ -957,9 +959,19 @@ export class Client implements Observable<ClientEvent> {
         // (chacha912, hackerwins): If syncLoop already executed with
         // PushPull, ignore the response when the syncMode is PushOnly.
         if (respPack.hasChanges() && syncMode === SyncMode.PushOnly) {
+          console.warn('🚨🚨 sync ignore', syncMode);
           return doc;
         }
 
+        if (
+          respPack.hasChanges() &&
+          attachment.syncMode === SyncMode.PushOnly
+        ) {
+          console.error('🚨🚨🚨🚨🚨 sync ignore', syncMode);
+          return doc;
+        }
+
+        console.log('✅✅ sync resp', syncMode);
         doc.applyChangePack(respPack);
         this.eventStreamObserver.next({
           type: ClientEventType.DocumentSynced,

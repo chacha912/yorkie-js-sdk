@@ -58,6 +58,7 @@ export class Attachment<T, P extends Indexable> {
    * `changeSyncMode` changes the sync mode of the document.
    */
   public changeSyncMode(syncMode: SyncMode) {
+    console.log('🚀changeSyncMode', syncMode);
     this.syncMode = syncMode;
   }
 
