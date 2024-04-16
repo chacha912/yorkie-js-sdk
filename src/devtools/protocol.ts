@@ -14,7 +14,7 @@
  * limitations under the License.
  */
 
-import type { HistoryChangePack } from '@yorkie-js-sdk/src/document/document';
+import type { DocEvent } from '@yorkie-js-sdk/src/document/document';
 
 /**
  * `EventSourceDevPanel` is the name of the source representing messages
@@ -76,7 +76,7 @@ export type SDKToPanelMessage =
   | {
       msg: 'doc::sync::full';
       docKey: string;
-      changes: Array<HistoryChangePack>;
+      changes: Array<Array<DocEvent>>;
     }
   /**
    * Sent whenever the document is updated.
@@ -84,7 +84,7 @@ export type SDKToPanelMessage =
   | {
       msg: 'doc::sync::partial';
       docKey: string;
-      changes: Array<HistoryChangePack>;
+      changes: Array<DocEvent>;
     };
 
 export type FullPanelToSDKMessage = PanelToSDKMessage & {

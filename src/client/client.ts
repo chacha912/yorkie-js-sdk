@@ -38,11 +38,10 @@ import {
   Document,
   DocumentKey,
   DocumentStatus,
-  WatchStreamType,
+  Indexable,
 } from '@yorkie-js-sdk/src/document/document';
 import { createAuthInterceptor } from '@yorkie-js-sdk/src/client/auth_interceptor';
 import { createMetricInterceptor } from '@yorkie-js-sdk/src/client/metric_interceptor';
-import { Indexable, DocEventType } from '@yorkie-js-sdk/src/document/document';
 
 /**
  * `SyncMode` is the mode of synchronization. It is used to determine
@@ -450,10 +449,7 @@ export class Client implements Observable<ClientEvent> {
           return doc;
         }
 
-        doc.applyStatus({
-          type: DocumentStatus.Attached,
-          value: { actorID: this.id! },
-        });
+        doc.applyStatus(DocumentStatus.Attached);
         this.attachmentMap.set(
           doc.getKey(),
           new Attachment(
@@ -519,9 +515,7 @@ export class Client implements Observable<ClientEvent> {
         const pack = converter.fromChangePack<P>(res.changePack!);
         doc.applyChangePack(pack);
         if (doc.getStatus() !== DocumentStatus.Removed) {
-          doc.applyStatus({
-            type: DocumentStatus.Detached,
-          });
+          doc.applyStatus(DocumentStatus.Detached);
         }
         this.detachInternal(doc.getKey());
 
@@ -862,15 +856,11 @@ export class Client implements Observable<ClientEvent> {
     resp: WatchDocumentResponse,
   ) {
     if (resp.body.case === 'initialization') {
-      attachment.doc.applyWatchStream({
-        type: WatchStreamType.Initialization,
-        value: { clientIDs: resp.body.value.clientIds },
-      });
+      attachment.doc.applyWatchStream(resp);
       return;
     } else if (resp.body.case === 'event') {
       const pbWatchEvent = resp.body.value;
       const eventType = pbWatchEvent.type;
-      const publisher = pbWatchEvent.publisher;
       switch (eventType) {
         case PbDocEventType.DOCUMENT_CHANGED:
           attachment.remoteChangeEventReceived = true;
@@ -883,16 +873,10 @@ export class Client implements Observable<ClientEvent> {
           });
           break;
         case PbDocEventType.DOCUMENT_WATCHED:
-          attachment.doc.applyWatchStream({
-            type: WatchStreamType.DocEvent,
-            value: { type: DocEventType.Watched, publisher },
-          });
+          attachment.doc.applyWatchStream(resp);
           break;
         case PbDocEventType.DOCUMENT_UNWATCHED: {
-          attachment.doc.applyWatchStream({
-            type: WatchStreamType.DocEvent,
-            value: { type: DocEventType.Unwatched, publisher },
-          });
+          attachment.doc.applyWatchStream(resp);
           break;
         }
       }

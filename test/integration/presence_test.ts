@@ -114,8 +114,8 @@ describe('Presence', function () {
     const c2ID = c2.getID()!;
 
     const docKey = toDocKey(`${task.name}-${new Date().getTime()}`);
-    const events1 = new EventCollector<DocEvent>();
-    const events2 = new EventCollector<DocEvent>();
+    const events1 = new EventCollector<any>();
+    const events2 = new EventCollector<any>();
 
     const doc1 = new yorkie.Document<{}, { name: string }>(docKey);
     await c1.attach(doc1, { initialPresence: { name: 'a' } });
@@ -225,7 +225,7 @@ describe('Presence', function () {
       initialPresence: { name: 'a1', cursor: { x: 0, y: 0 } },
     });
 
-    const eventCollector = new EventCollector<DocEvent>();
+    const eventCollector = new EventCollector<any>();
     const stub = vi.fn().mockImplementation((event) => {
       eventCollector.add(event);
     });
@@ -320,8 +320,8 @@ describe(`Document.Subscribe('presence')`, function () {
     const c2ID = c2.getID()!;
 
     const docKey = toDocKey(`${task.name}-${new Date().getTime()}`);
-    const eventCollectorP1 = new EventCollector<DocEvent>();
-    const eventCollectorP2 = new EventCollector<DocEvent>();
+    const eventCollectorP1 = new EventCollector<any>();
+    const eventCollectorP2 = new EventCollector<any>();
     type PresenceType = { name: string; cursor: { x: number; y: number } };
     const doc1 = new yorkie.Document<{}, PresenceType>(docKey);
     await c1.attach(doc1, {
@@ -379,7 +379,7 @@ describe(`Document.Subscribe('presence')`, function () {
 
     const docKey = toDocKey(`${task.name}-${new Date().getTime()}`);
     type PresenceType = { name: string };
-    const eventCollector = new EventCollector<DocEvent>();
+    const eventCollector = new EventCollector<any>();
     const doc1 = new yorkie.Document<{}, PresenceType>(docKey);
     await c1.attach(doc1, { initialPresence: { name: 'a' } });
     const stub1 = vi.fn().mockImplementation((event) => {
@@ -434,8 +434,10 @@ describe(`Document.Subscribe('presence')`, function () {
     await c1.attach(doc1, {
       initialPresence: { name: 'a1', cursor: { x: 0, y: 0 } },
     });
-    const events = new EventCollector<DocEvent>();
-    const unsub = doc1.subscribe('presence', (event) => events.add(event));
+    const events = new EventCollector<Pick<DocEvent, 'type' | 'value'>>();
+    const unsub = doc1.subscribe('presence', ({ type, value }) =>
+      events.add({ type, value }),
+    );
 
     // 01. c2 attaches doc in realtime sync, and c3 attached doc in manual sync.
     //     c1 receives the watched event from c2.
