@@ -100,7 +100,8 @@ export function setupDevtools<T, P extends Indexable>(
 ): void {
   // NOTE(hackerwins): For production builds, or when running in Node.js, do nothing.
   if (
-    (typeof process !== 'undefined' && process.env.NODE_ENV === 'production') ||
+    (typeof process !== 'undefined' &&
+      process.env?.NODE_ENV === 'production') ||
     typeof window === 'undefined'
   ) {
     return;

@@ -147,7 +147,7 @@ export class Change<P extends Indexable> {
     const reverseOps: Array<HistoryOperation<P>> = [];
     if (
       typeof process !== 'undefined' &&
-      process.env.NODE_ENV !== 'production' &&
+      process.env?.NODE_ENV !== 'production' &&
       this.operations.length
     ) {
       root.opsForTest.push(this.operations);
