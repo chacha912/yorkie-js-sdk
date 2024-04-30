@@ -15,12 +15,7 @@
  */
 
 import { ActorID } from '@yorkie-js-sdk/src/document/time/actor_id';
-import {
-  createPromiseClient,
-  PromiseClient,
-  ConnectError,
-  Code as ConnectErrorCode,
-} from '@connectrpc/connect';
+import { createPromiseClient, PromiseClient } from '@connectrpc/connect';
 import { createGrpcWebTransport } from '@connectrpc/connect-web';
 import { YorkieService } from '../api/yorkie/v1/yorkie_connect';
 import { WatchDocumentResponse } from '@yorkie-js-sdk/src/api/yorkie/v1/yorkie_pb';
@@ -563,70 +558,55 @@ export class Client {
       );
     }
 
-    return attachment.runWatchLoop(
-      (onDisconnect: () => void): Promise<[WatchStream, AbortController]> => {
-        if (!this.isActive()) {
-          return Promise.reject(
-            new YorkieError(Code.ClientNotActive, `${this.key} is not active`),
-          );
-        }
-
-        const ac = new AbortController();
-        const stream = this.rpcClient.watchDocument(
-          {
-            clientId: this.id!,
-            documentId: attachment.docID,
-          },
-          {
-            headers: { 'x-shard-key': `${this.apiKey}/${docKey}` },
-            signal: ac.signal,
-          },
+    return attachment.runWatchLoop((onDisconnect) => {
+      if (!this.isActive()) {
+        return Promise.reject(
+          new YorkieError(Code.ClientNotActive, `${this.key} is not active`),
         );
+      }
 
-        attachment.doc.publish([
-          {
-            type: DocEventType.ConnectionChanged,
-            value: StreamConnectionStatus.Connected,
-          },
-        ]);
-        logger.info(`[WD] c:"${this.getKey()}" watches d:"${docKey}"`);
+      const ac = new AbortController();
+      const stream = this.rpcClient.watchDocument(
+        {
+          clientId: this.id!,
+          documentId: attachment.docID,
+        },
+        {
+          headers: { 'x-shard-key': `${this.apiKey}/${docKey}` },
+          signal: ac.signal,
+        },
+      );
 
-        return new Promise((resolve, reject) => {
-          const handleStream = async () => {
-            try {
-              for await (const resp of stream) {
-                this.handleWatchDocumentsResponse(attachment, resp);
+      attachment.doc.publish([
+        {
+          type: DocEventType.ConnectionChanged,
+          value: StreamConnectionStatus.Connected,
+        },
+      ]);
+      logger.info(`[WD] c:"${this.getKey()}" watches d:"${docKey}"`);
 
-                // NOTE(hackerwins): When the first response is received, we need to
-                // resolve the promise to notify that the watch stream is ready.
-                if (resp.body.case === 'initialization') {
-                  resolve([stream, ac]);
-                }
+      return new Promise((resolve, reject) => {
+        const handleStream = async () => {
+          try {
+            for await (const resp of stream) {
+              this.handleWatchDocumentsResponse(attachment, resp);
+
+              // NOTE(hackerwins): When the first response is received, we need to
+              // resolve the promise to notify that the watch stream is ready.
+              if (resp.body.case === 'initialization') {
+                resolve([stream, ac]);
               }
-            } catch (err) {
-              attachment.doc.publish([
-                {
-                  type: DocEventType.ConnectionChanged,
-                  value: StreamConnectionStatus.Disconnected,
-                },
-              ]);
-              logger.debug(`[WD] c:"${this.getKey()}" unwatches`);
-
-              if (
-                err instanceof ConnectError &&
-                err.code != ConnectErrorCode.Canceled
-              ) {
-                onDisconnect();
-              }
-
-              reject(err);
             }
-          };
+          } catch (err) {
+            logger.debug(`[WD] c:"${this.getKey()}" unwatches`);
+            onDisconnect(err as Error);
+            reject(err);
+          }
+        };
 
-          handleStream();
-        });
-      },
-    );
+        handleStream();
+      });
+    });
   }
 
   private handleWatchDocumentsResponse<T, P extends Indexable>(

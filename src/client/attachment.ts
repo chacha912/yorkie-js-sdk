@@ -1,5 +1,12 @@
-import { Document, Indexable } from '@yorkie-js-sdk/src/document/document';
+import {
+  Document,
+  Indexable,
+  DocEventType,
+  StreamConnectionStatus,
+} from '@yorkie-js-sdk/src/document/document';
+import { OpSource } from '@yorkie-js-sdk/src/document/operation/operation';
 import { SyncMode } from '@yorkie-js-sdk/src/client/client';
+import { ConnectError, Code as ConnectErrorCode } from '@connectrpc/connect';
 
 /**
  * `WatchStream` is a stream that watches the changes of the document.
@@ -59,8 +66,39 @@ export class Attachment<T, P extends Indexable> {
    * `runWatchLoop` runs the watch loop.
    */
   public async runWatchLoop(
-    watchStreamCreator: (onDisconnect: () => void) => Promise<WatchStream>,
+    watchStreamCreator: (
+      onDisconnect: (err: Error) => void,
+    ) => Promise<[WatchStream, AbortController]>,
   ): Promise<void> {
+    const onDisconnect = (err: Error) => {
+      this.watchStream = undefined;
+      this.watchAbortController = undefined;
+      clearTimeout(this.watchLoopTimerID);
+      this.watchLoopTimerID = undefined;
+
+      this.doc.resetOnlineClients();
+      this.doc.publish([
+        {
+          type: DocEventType.Initialized,
+          source: OpSource.Local,
+          value: this.doc.getPresences(),
+        },
+      ]);
+      this.doc.publish([
+        {
+          type: DocEventType.ConnectionChanged,
+          value: StreamConnectionStatus.Disconnected,
+        },
+      ]);
+
+      if (
+        err instanceof ConnectError &&
+        err.code != ConnectErrorCode.Canceled
+      ) {
+        this.watchLoopTimerID = setTimeout(doLoop, this.reconnectStreamDelay);
+      }
+    };
+
     const doLoop = async (): Promise<void> => {
       if (this.watchStream) {
         return Promise.resolve();
@@ -72,14 +110,7 @@ export class Attachment<T, P extends Indexable> {
 
       try {
         [this.watchStream, this.watchAbortController] =
-          await watchStreamCreator(() => {
-            this.watchStream = undefined;
-            this.watchAbortController = undefined;
-            this.watchLoopTimerID = setTimeout(
-              doLoop,
-              this.reconnectStreamDelay,
-            );
-          });
+          await watchStreamCreator(onDisconnect);
       } catch (err) {
         // TODO(hackerwins): For now, if the creation of the watch stream fails,
         // it is considered normal and the watch loop is executed again after a
