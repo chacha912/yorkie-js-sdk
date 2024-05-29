@@ -1182,6 +1182,7 @@ function fromOperation(pbOperation: PbOperation): Operation | undefined {
     const attributes = new Map();
     const attributesToRemove = pbTreeStyleOperation.attributesToRemove;
     const createdAtMapByActor = new Map();
+    console.log('test');
     if (pbTreeStyleOperation!.createdAtMapByActor) {
       Object.entries(pbTreeStyleOperation!.createdAtMapByActor).forEach(
         ([key, value]) => {
