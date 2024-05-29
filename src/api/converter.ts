@@ -450,7 +450,7 @@ function toOperation(operation: Operation): PbOperation {
     }
 
     const attributesToRemove = treeStyleOperation.getAttributesToRemove();
-    if (attributesToRemove.length > 0) {
+    if (attributesToRemove?.length > 0) {
       pbTreeStyleOperation.attributesToRemove = attributesToRemove;
     } else {
       const attributesMap = pbTreeStyleOperation.attributes;
@@ -1188,7 +1188,7 @@ function fromOperation(pbOperation: PbOperation): Operation | undefined {
       },
     );
 
-    if (attributesToRemove.length > 0) {
+    if (attributesToRemove?.length > 0) {
       return TreeStyleOperation.createTreeRemoveStyleOperation(
         fromTimeTicket(pbTreeStyleOperation!.parentCreatedAt)!,
         fromTreePos(pbTreeStyleOperation!.from!),
