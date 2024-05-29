@@ -1182,11 +1182,13 @@ function fromOperation(pbOperation: PbOperation): Operation | undefined {
     const attributes = new Map();
     const attributesToRemove = pbTreeStyleOperation.attributesToRemove;
     const createdAtMapByActor = new Map();
-    Object.entries(pbTreeStyleOperation!.createdAtMapByActor).forEach(
-      ([key, value]) => {
-        createdAtMapByActor.set(key, fromTimeTicket(value));
-      },
-    );
+    if (pbTreeStyleOperation!.createdAtMapByActor) {
+      Object.entries(pbTreeStyleOperation!.createdAtMapByActor).forEach(
+        ([key, value]) => {
+          createdAtMapByActor.set(key, fromTimeTicket(value));
+        },
+      );
+    }
 
     if (attributesToRemove?.length > 0) {
       return TreeStyleOperation.createTreeRemoveStyleOperation(
