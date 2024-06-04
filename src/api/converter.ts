@@ -1251,6 +1251,9 @@ function fromChanges<P extends Indexable>(
   const changes: Array<Change<P>> = [];
 
   for (const pbChange of pbChanges) {
+    if (pbChange.id?.serverSeq === '159') {
+      debugger;
+    }
     changes.push(
       Change.create({
         id: fromChangeID(pbChange.id!),
