@@ -2,7 +2,8 @@
   "name": "yorkie-js-sdk",
   "version": "0.5.3",
   "description": "Yorkie JS SDK",
-  "main": "./src/yorkie.ts",
+  "main": "./dist/yorkie-js-sdk.js",
+  "types": "./dist/yorkie-js-sdk.d.ts",
   "publishConfig": {
     "access": "public",
     "main": "./dist/yorkie-js-sdk.js",
@@ -22,7 +23,8 @@
     "test:bench": "vitest bench",
     "test:ci": "vitest run --coverage",
     "test:yorkie.dev": "TEST_RPC_ADDR=https://api.yorkie.dev vitest run --coverage",
-    "prepare": "pnpm build"
+    "prepare": "pnpm build",
+    "postinstall": "pnpm build"
   },
   "engines": {
     "node": ">=18.0.0",
