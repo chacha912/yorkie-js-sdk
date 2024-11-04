@@ -88,6 +88,11 @@ describe('Auth Webhook', () => {
         addr.address === '::' || addr.address === '0.0.0.0'
           ? 'localhost'
           : addr.address;
+      console.log(
+        '🚀 Webhook server is running on port',
+        webhookServerAddress,
+        webhookServerPort,
+      );
     });
 
     // Login to yorkie
